@@ -2,7 +2,7 @@ name: Akcie v halách (PWA)
 
 on:
   schedule:
-    - cron: "17 */3 * * *"   # každé 3 hodiny
+    - cron: "17 3 * * 1"   # raz týždenne, v pondelok 3:17 UTC (4:17 / 5:17 pražského času)
   workflow_dispatch:
   push:
     branches: [main]

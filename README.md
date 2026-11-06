@@ -13,7 +13,7 @@ Jednoduchá PWA appka, ktorá ukazuje **dnešné a zajtrajšie** akcie v:
 
 Prehliadač nemôže kvôli CORS sťahovať cudzie weby priamo, preto:
 
-1. GitHub Action `.github/workflows/deploy.yml` každé 3 hodiny spustí
+1. GitHub Action `.github/workflows/deploy.yml` raz týždenne (v pondelok ráno) spustí
    `scraper/scrape.py` (čistý Python, bez závislostí), ktorý vytvorí `app/events.json`.
 2. Obsah `app/` sa nasadí na GitHub Pages.
 3. Appka si načíta `events.json` a vyfiltruje akcie na dnes / zajtra (pražský čas).
