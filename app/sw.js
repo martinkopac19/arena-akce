@@ -1,5 +1,5 @@
 // Shell: cache-first; events.json: network-first s fallbackom na cache (offline).
-const CACHE = 'arena-akce-v1';
+const CACHE = 'arena-akce-v2';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

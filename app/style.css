@@ -97,6 +97,13 @@ main { max-width: 720px; margin: 0 auto; padding: 14px 16px 24px; }
 }
 .card-body { min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .time { font-weight: 750; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.tag {
+  display: inline-block; vertical-align: 2px; margin-left: 8px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+  color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+.thumb.sport { display: grid; place-items: center; font-size: 34px; }
 .title { font-weight: 600; margin: 2px 0; overflow-wrap: anywhere; }
 .desc {
   color: var(--muted); font-size: .86rem;

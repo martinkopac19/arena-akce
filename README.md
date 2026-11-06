@@ -4,7 +4,10 @@ Jednoduchá PWA appka, ktorá ukazuje **dnešné a zajtrajšie** akcie v:
 
 - **O2 arena** – zdroj: <https://www.o2arena.cz/events/>
 - **O2 universum** – zdroj: <https://www.o2universum.cz/events/>
-- **UNYP Arena** – zdroj: [GoOut](https://goout.net/cs/unyp-arena/vziwqe/) (oficiálny web haly kalendár akcií nemá)
+- **UNYP Arena** – oficiálny web haly kalendár akcií nemá, preto sa skladá z:
+  - [GoOut](https://goout.net/cs/unyp-arena/vziwqe/) – koncerty, galavečery a iné akcie,
+  - [ACEMA Sparta Praha florbal](https://www.sparta-florbal.cz/) – domáce zápasy mužov A (Superliga) a žien A (1. liga),
+  - [VK Lvi Praha](https://www.vklvipraha.cz/) – domáce volejbalové zápasy mužov aj žien (extraliga, pohár, Challenge Cup).
 
 ## Ako to funguje
 

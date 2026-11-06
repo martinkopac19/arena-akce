@@ -4,6 +4,8 @@ const TZ = 'Europe/Prague';
 const VENUE_ORDER = ['o2arena', 'o2universum', 'unyp'];
 const VENUE_NAMES = { o2arena: 'O2 arena', o2universum: 'O2 universum', unyp: 'UNYP Arena' };
 
+const SPORT_ICONS = { Florbal: '🏑', Volejbal: '🏐' };
+
 let data = null;
 let day = 0;
 
@@ -48,16 +50,19 @@ function render() {
     const sec = el('section', { class: 'venue', style: `--c:${color}` },
       el('h2', { class: 'venue-head' }, el('span', { class: 'dot' }), VENUE_NAMES[v],
         el('span', { class: 'count' }, evs.length ? String(evs.length) : '')));
-    if (data.errors && data.errors[v] && !evs.length) {
+    const failed = Object.keys(data.errors || {}).some(k => k === v || k.startsWith(v + '-'));
+    if (failed && !evs.length) {
       sec.append(el('p', { class: 'empty' }, 'Program sa nepodarilo načítať.'));
     } else if (!evs.length) {
       sec.append(el('p', { class: 'empty' }, day === 0 ? 'Dnes žiadna akcia.' : 'Zajtra žiadna akcia.'));
     }
     for (const e of evs) {
       sec.append(el('a', { class: 'card', href: e.url, target: '_blank', rel: 'noopener' },
-        el('div', { class: 'thumb', style: e.image ? `background-image:url("${encodeURI(e.image)}")` : '' }),
+        e.image || !SPORT_ICONS[e.tag]
+          ? el('div', { class: 'thumb', style: e.image ? `background-image:url("${encodeURI(e.image)}")` : '' })
+          : el('div', { class: 'thumb sport', 'aria-hidden': 'true' }, SPORT_ICONS[e.tag]),
         el('div', { class: 'card-body' },
-          el('div', { class: 'time' }, timeOf(e)),
+          el('div', { class: 'time' }, timeOf(e), e.tag ? el('span', { class: 'tag' }, e.tag) : null),
           el('div', { class: 'title' }, e.title),
           e.description ? el('div', { class: 'desc' }, e.description) : null)));
     }
