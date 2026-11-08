@@ -139,7 +139,15 @@ document.getElementById('refresh').addEventListener('click', load);
 // po návrate do appky (napr. ďalší deň) prekresli a obnov dáta
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator) {
+  // Keď sa nainštaluje nová verzia appky, raz sa obnovíme, aby sa hneď prejavila.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+  });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {});
+}
 document.getElementById('tabs').addEventListener('scroll', updateScrollHint, { passive: true });
 window.addEventListener('resize', updateScrollHint);
 buildTabs();

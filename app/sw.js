@@ -1,9 +1,12 @@
-// Shell: cache-first; events.json: network-first s fallbackom na cache (offline).
-const CACHE = 'arena-akce-v3';
-const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
+// Network-first pre všetko: online sa vždy načíta najnovšia verzia (bez HTTP
+// cache), cache sa použije len offline. Appka je malá, takže to nič nestojí.
+const CACHE = 'arena-akce-v4';
+const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'events.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE)
+    .then(c => Promise.allSettled(SHELL.map(u => fetch(u, { cache: 'reload' }).then(r => r.ok && c.put(u, r)))))
+    .then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
@@ -13,13 +16,13 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
-  if (url.pathname.endsWith('/events.json')) {
-    e.respondWith(fetch(e.request).then(r => {
-      const copy = r.clone();
-      caches.open(CACHE).then(c => c.put('events.json', copy));
+  e.respondWith(
+    fetch(e.request, { cache: 'no-cache' }).then(r => {
+      if (r.ok) {
+        const copy = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+      }
       return r;
-    }).catch(() => caches.match('events.json')));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }))
+  );
 });
