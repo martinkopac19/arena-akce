@@ -55,17 +55,28 @@ h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
 .icon-btn.spin svg { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Dni: naraz sú vidieť dva (Dnes, Zajtra), ďalšie sa posúvajú doprava. */
 .tabs {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  display: flex; gap: 6px;
   max-width: 720px; margin: 12px auto 0;
   background: var(--surface); padding: 4px; border-radius: 12px;
   box-shadow: 0 0 0 1px var(--line);
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scroll-padding: 4px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
+/* jemné stmavnutie okraja naznačuje, že sú tam ďalšie dni */
+.tabs.more-right { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
+.tabs.more-left { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 18px), transparent); }
+.tabs.more-left.more-right { -webkit-mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
 .tab {
+  flex: 0 0 calc((100% - 6px) / 2);
+  scroll-snap-align: start;
   border: 0; background: transparent; color: var(--muted);
   padding: 8px 6px; border-radius: 9px; cursor: pointer;
   display: flex; flex-direction: column; align-items: center; gap: 1px;
-  font: inherit;
+  font: inherit; white-space: nowrap;
 }
 .tab[aria-selected="true"] { background: var(--accent); color: #fff; }
 .tab-label { font-weight: 650; }

@@ -121,6 +121,39 @@ SPARTA_TEAMS = ("/tym/436-muzi-a", "/tym/439-zeny-a")
 FLORBAL_DATE_RE = re.compile(r"(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})(?:\s+(\d{1,2}):(\d{2}))?")
 
 
+RELATIVE_DAYS = {"vcera": -1, "dnes": 0, "zitra": 1, "pozitri": 2}
+
+
+def _florbal_datetime(text, item):
+    """Dátum zápasu z webu Sparty -> (datetime, má_čas) alebo None.
+
+    Bežne "ne 13. 9. 2026 14:00", pri blízkych zápasoch ale relatívne
+    "dnes v 17:30" / "zítra v 18:00". Záložne berieme veľký dátum bez roka.
+    """
+    now = datetime.now(PRAGUE)
+    m = FLORBAL_DATE_RE.search(text)
+    if m:
+        d, mo, y, hh, mm = m.groups()
+        return datetime(int(y), int(mo), int(d), int(hh or 0), int(mm or 0), tzinfo=PRAGUE), bool(hh)
+    t = re.search(r"(\d{1,2}):(\d{2})", text)
+    word = text.lower().translate(_ASCII).split()[0] if text.strip() else ""
+    if word in RELATIVE_DAYS:
+        day = (now + timedelta(days=RELATIVE_DAYS[word])).date()
+        hh, mm = (int(t.group(1)), int(t.group(2))) if t else (0, 0)
+        return datetime(day.year, day.month, day.day, hh, mm, tzinfo=PRAGUE), bool(t)
+    big = re.search(r'<div class="date-large[^"]*">(.*?)</div>', item, re.S)
+    if big:
+        spans = [clean(x) for x in re.findall(r"<span[^>]*>(.*?)</span>", big.group(1), re.S)]
+        dm = next((re.match(r"(\d{1,2})\.\s*(\d{1,2})\.", x) for x in spans if re.match(r"\d{1,2}\.\s*\d{1,2}\.", x)), None)
+        tm = next((re.match(r"(\d{1,2}):(\d{2})", x) for x in spans if re.match(r"\d{1,2}:\d{2}", x)), None)
+        if dm:
+            mo = int(dm.group(2))
+            year = now.year + (1 if mo < now.month - 2 else 0) - (1 if mo > now.month + 9 else 0)
+            hh, mm = (int(tm.group(1)), int(tm.group(2))) if tm else (0, 0)
+            return datetime(year, mo, int(dm.group(1)), hh, mm, tzinfo=PRAGUE), bool(tm)
+    return None
+
+
 def scrape_sparta_florbal():
     """Domáce zápasy ACEMA Sparta Praha v UNYP Arene (zo zoznamu zápasov tímu)."""
     out = []
@@ -136,11 +169,11 @@ def scrape_sparta_florbal():
             teams = [clean(t) for t in re.findall(r'<strong class="[^"]*">(.*?)</strong>', item, re.S)][:2]
             if not (date and place and len(teams) == 2) or "UNYP" not in place.group(1).upper():
                 continue
-            m = FLORBAL_DATE_RE.search(date.group(1))
-            if not m:
+            parsed = _florbal_datetime(clean(date.group(1)), item)
+            if not parsed:
+                print(f"florbal: nerozpoznaný dátum {date.group(1)!r}", file=sys.stderr)
                 continue
-            d, mo, y, hh, mm = m.groups()
-            dt = datetime(int(y), int(mo), int(d), int(hh or 0), int(mm or 0), tzinfo=PRAGUE)
+            dt, has_time = parsed
             competition = clean(comp.group(1)) if comp else ""
             if "zeny" in team:
                 competition = ("Ženy – " + competition) if competition else "Ženy"
@@ -150,7 +183,7 @@ def scrape_sparta_florbal():
                 "title": f"{teams[0]} – {teams[1]}",
                 "start": dt.isoformat(),
                 "date": dt.date().isoformat(),
-                "hasTime": bool(hh),
+                "hasTime": has_time,
                 "url": SPARTA_FLORBAL + href if href.startswith("/") else href,
                 "image": None,
                 "description": competition,
